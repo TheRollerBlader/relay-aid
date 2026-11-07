@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RelayAid SubmitRequestV1 — proposed application contract",
+  "description": "Application envelope to validate before generated Spacetime binding conversion. Station ownership is derived from authenticated identity, never this payload.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "commandId",
+    "requestId",
+    "localSequence",
+    "needType",
+    "units",
+    "deviceCreatedAt"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "commandId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "requestId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "localSequence": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]{0,19}$"
+    },
+    "needType": {
+      "enum": [
+        "WATER",
+        "CHARGING"
+      ]
+    },
+    "units": {
+      "const": 1
+    },
+    "deviceCreatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$comment": "Enable format assertions in the selected validator; also enforce the actual u64 range in trusted code. Persist immutable request and command IDs once. Same ID with changed payload is conflict."
+}

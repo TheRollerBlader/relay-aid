@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+.env
+.env.*
+!.env.example
+coverage/
+.DS_Store
+__pycache__/
+*.pyc
+.firmware-build/
+evidence/local-run/

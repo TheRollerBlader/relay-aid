@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "description": "Synthetic design fixture; expected results are derived from the declared matching model, not measured application outcomes.",
+  "snapshotId": "demo-coverage-001",
+  "shelterId": "demo-shelter",
+  "allocationEpoch": "42",
+  "policyId": "coverage-wait-travel-v1",
+  "capturedAt": "2026-11-07T23:00:00Z",
+  "requests": [
+    {
+      "requestId": "r1",
+      "receivedAt": "2026-11-07T22:00:00Z",
+      "version": "2",
+      "state": "ACKNOWLEDGED",
+      "needType": "CHARGING",
+      "units": 1,
+      "zoneId": "north",
+      "requiresStepFree": false
+    },
+    {
+      "requestId": "r2",
+      "receivedAt": "2026-11-07T22:01:00Z",
+      "version": "2",
+      "state": "ACKNOWLEDGED",
+      "needType": "CHARGING",
+      "units": 1,
+      "zoneId": "north",
+      "requiresStepFree": true
+    },
+    {
+      "requestId": "r3",
+      "receivedAt": "2026-11-07T22:02:00Z",
+      "version": "2",
+      "state": "ACKNOWLEDGED",
+      "needType": "WATER",
+      "units": 1,
+      "zoneId": "north",
+      "requiresStepFree": false
+    },
+    {
+      "requestId": "r4",
+      "receivedAt": "2026-11-07T22:03:00Z",
+      "version": "2",
+      "state": "ACKNOWLEDGED",
+      "needType": "WATER",
+      "units": 1,
+      "zoneId": "north",
+      "requiresStepFree": false
+    }
+  ],
+  "resources": [
+    {
+      "resourceId": "charging-a",
+      "version": "1",
+      "needType": "CHARGING",
+      "accountingMode": "REUSABLE",
+      "totalCapacity": 1,
+      "reservedUnits": 0,
+      "consumedUnits": 0,
+      "available": true,
+      "stepFree": true,
+      "zoneId": "near"
+    },
+    {
+      "resourceId": "charging-b",
+      "version": "1",
+      "needType": "CHARGING",
+      "accountingMode": "REUSABLE",
+      "totalCapacity": 1,
+      "reservedUnits": 0,
+      "consumedUnits": 0,
+      "available": true,
+      "stepFree": false,
+      "zoneId": "far"
+    },
+    {
+      "resourceId": "water-a",
+      "version": "1",
+      "needType": "WATER",
+      "accountingMode": "CONSUMABLE",
+      "totalCapacity": 1,
+      "reservedUnits": 0,
+      "consumedUnits": 0,
+      "available": true,
+      "stepFree": true,
+      "zoneId": "near"
+    }
+  ],
+  "travelSeconds": [
+    {
+      "from": "north",
+      "to": "near",
+      "seconds": 60
+    },
+    {
+      "from": "north",
+      "to": "far",
+      "seconds": 180
+    }
+  ],
+  "expected": {
+    "optimizedMatchCount": 3,
+    "fcfsMatchCount": 2,
+    "optimizedAllocations": [
+      [
+        "r1",
+        "charging-b"
+      ],
+      [
+        "r2",
+        "charging-a"
+      ],
+      [
+        "r3",
+        "water-a"
+      ]
+    ],
+    "unmatched": [
+      {
+        "requestId": "r4",
+        "reason": "CAPACITY_COMPETITION"
+      }
+    ],
+    "notes": "IDs are short fixture labels; station submit contract requires UUIDs. The fixture adapter maps table category to needType and decimal version strings to generated binding types."
+  }
+}

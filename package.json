@@ -1,0 +1,33 @@
+{
+  "name": "relayaid",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "RelayAid — durable shelter request station, human coordination, and capacity-valid allocation.",
+  "scripts": {
+    "dev": "concurrently -n server,web -c green,blue \"pnpm --filter @relayaid/server dev\" \"pnpm --filter @relayaid/web dev\"",
+    "dev:server": "pnpm --filter @relayaid/server dev",
+    "dev:ui": "pnpm --filter @relayaid/web dev",
+    "dev:station": "pnpm --filter @relayaid/server dev",
+    "dev:worker": "pnpm --filter @relayaid/server worker",
+    "start": "pnpm --filter @relayaid/web build && pnpm --filter @relayaid/server start",
+    "build": "pnpm --filter @relayaid/web build",
+    "test": "vitest run",
+    "test:unit": "vitest run",
+    "test:integration": "vitest run tests/integration.test.ts packages/authority packages/station apps/proposal-worker",
+    "test:e2e": "vitest run tests/e2e.test.ts",
+    "demo:seed": "pnpm --filter @relayaid/server seed",
+    "typecheck": "tsc --noEmit -p tsconfig.json && pnpm --filter @relayaid/web typecheck",
+    "firmware:test": "python3 firmware/station/test_logic.py"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "concurrently": "^9.1.2",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.2"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "packageManager": "pnpm@9.15.0"
+}
