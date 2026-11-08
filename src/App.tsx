@@ -25,6 +25,7 @@ import { TaskDetailView } from './views/TaskDetailView'
 import { TasksView } from './views/TasksView'
 import { TimelineView } from './views/TimelineView'
 import { OutboxSync } from './views/OutboxSync'
+import ResponseDesk, { EmergencyAction, type SessionAuth } from './response/ResponseApp.tsx'
 
 function DeskRoutes() {
   return (
@@ -94,63 +95,65 @@ function DeskApp({ tokenProvider }: { tokenProvider?: () => Promise<string> }) {
   )
 }
 
-function RealApp() {
-  const auth = useAuth()
-  const token = auth.user?.id_token
-  const tokenProvider = useMemo(() => {
-    if (!token) return undefined
-    return async () => token
-  }, [token])
-
-  if (auth.isLoading) return <p className="p-8 text-muted">Connecting to sign-in…</p>
-  if (auth.error) return <p className="p-8">Sign-in did not finish. Try again.</p>
-  if (!auth.isAuthenticated || !tokenProvider) {
-    return (
-      <main className="mx-auto max-w-xl px-5 py-16">
-        <p className="font-mono text-[11px] tracking-[0.18em] text-accent">SIGN IN</p>
-        <h1 className="mt-3 text-4xl font-medium">Sign in to the shelter desk</h1>
-        <p className="mt-4 text-muted">
-          Verification mail stays in the local inbox. It is not sent to a real mailbox. After you register, open that inbox and use the newest verification message.
-        </p>
-        <a href="http://localhost:8025" className="mt-3 inline-flex min-h-12 items-center text-accent">
-          Open local inbox
-        </a>
-        <button type="button" className="mt-6 min-h-12 border border-accent px-4" onClick={() => void auth.signinRedirect()}>
-          Sign in
-        </button>
-      </main>
-    )
+function authBridge(auth: ReturnType<typeof useAuth>): SessionAuth {
+  return {
+    configured: true,
+    isLoading: auth.isLoading,
+    error: auth.error,
+    isAuthenticated: Boolean(auth.isAuthenticated),
+    accessToken: auth.user?.access_token || '',
+    signIn: async () => {
+      await auth.signinRedirect()
+    },
+    signOut: async () => {
+      await auth.signoutRedirect()
+    },
   }
-
-  return <DeskApp tokenProvider={tokenProvider} />
 }
 
-function SignInMissing() {
+function OidcFront() {
+  const auth = useAuth()
+  const token = auth.user?.id_token
+  const tokenProvider = useMemo(() => (token ? async () => token : undefined), [token])
   return (
-    <main className="mx-auto max-w-xl px-5 py-16">
-      <h1 className="text-4xl font-medium">Sign-in is not configured</h1>
-      <p className="mt-4 text-muted">Set VITE_OIDC_CLIENT_ID before turning off demo mode. This desk will not open an anonymous connection.</p>
-    </main>
+    <>
+      <EmergencyAction />
+      <ResponseDesk legacy={<DeskApp tokenProvider={tokenProvider} />} auth={authBridge(auth)} />
+    </>
   )
 }
 
 export default function App() {
-  if (!demoMode && !oidcClientId) return <SignInMissing />
-  if (!demoMode) {
+  if (!oidcClientId) {
     return (
-      <AuthProvider
-        authority={oidcAuthority}
-        client_id={oidcClientId}
-        redirect_uri={window.location.origin}
-        response_type="code"
-        scope="openid profile email"
-        onSigninCallback={() => {
-          window.history.replaceState({}, document.title, window.location.pathname)
-        }}
-      >
-        <RealApp />
-      </AuthProvider>
+      <>
+        <EmergencyAction />
+        <ResponseDesk
+          legacy={<DeskApp />}
+          auth={{
+            configured: false,
+            isLoading: false,
+            isAuthenticated: false,
+            accessToken: '',
+            signIn: async () => undefined,
+            signOut: async () => undefined,
+          }}
+        />
+      </>
     )
   }
-  return <DeskApp />
+  return (
+    <AuthProvider
+      authority={oidcAuthority}
+      client_id={oidcClientId}
+      redirect_uri={window.location.origin}
+      response_type="code"
+      scope="openid profile email"
+      onSigninCallback={() => {
+        window.history.replaceState({}, document.title, window.location.pathname)
+      }}
+    >
+      <OidcFront />
+    </AuthProvider>
+  )
 }

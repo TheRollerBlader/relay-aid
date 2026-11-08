@@ -11,6 +11,8 @@
     "docs:charts": "node --experimental-strip-types scripts/generate-readme-charts.ts"
   },
   "dependencies": {
+    "@netlify/blobs": "^11.1.8",
+    "@netlify/functions": "^6.1.1",
     "@noble/hashes": "^2.4.0",
     "jose": "^6.2.15",
     "livekit-client": "^2.23.0",

@@ -66,9 +66,8 @@ export function Shell() {
         Skip to main content
       </a>
       <header className="border-b border-line">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-8 gap-y-3 px-5 py-4 sm:px-8">
+        <div className="shelter-bar mx-auto flex max-w-6xl flex-wrap items-center gap-x-8 gap-y-3 px-5 py-4 sm:px-8">
           <div className="flex items-center gap-3">
-            <span className="text-4xl text-accent" aria-hidden="true">✳</span>
             <div>
 
               <p className="text-lg font-medium leading-none">RelayAid</p>

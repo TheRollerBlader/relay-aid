@@ -5,7 +5,7 @@ import {initialState, type Actor, type Command, type State} from '../shared/auto
 
 const file = process.env.AUTONOMY_STATE_FILE || 'runtime/generated/autonomy-state.json';
 
-function seed(state: State): State {
+export function seedState(state: State): State {
   state.stock['water-north'] = {id:'water-north', shelterId:'shelter-a', kind:'water', accessible:false, available:2, reserved:0, version:1};
   state.stock['water-south'] = {id:'water-south', shelterId:'shelter-b', kind:'water', accessible:false, available:6, reserved:0, version:1};
   state.stock['charge-north'] = {id:'charge-north', shelterId:'shelter-a', kind:'charging', accessible:false, available:1, reserved:0, version:1};
@@ -28,7 +28,7 @@ function load(): State {
   try {
     return JSON.parse(readFileSync(file, 'utf8')) as State;
   } catch {
-    return seed(initialState());
+    return seedState(initialState());
   }
 }
 

@@ -1,4 +1,4 @@
-const base=import.meta.env.VITE_GATEWAY_URL||'http://localhost:4100';
+const base = import.meta.env.VITE_GATEWAY_URL ?? ''
 let bearer='';
 export function setGatewayToken(token:string){bearer=token}
 export function gatewayToken(){return bearer}

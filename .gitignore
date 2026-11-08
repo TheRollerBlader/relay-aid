@@ -32,3 +32,6 @@ __pycache__/
 !.env.example
 runtime/generated/
 artifacts/
+
+# Local Netlify folder
+.netlify
