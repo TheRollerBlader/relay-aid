@@ -44,7 +44,10 @@ export function HomeView() {
   }
 
   return (
-    <div className="max-w-xl">
+    <div className="signal-home">
+      <p className="font-mono text-xs tracking-widest text-accent">HUMAN CONNECTION, COORDINATED</p>
+      <h1 className="signal-title">Different needs.<span>One community.</span></h1>
+      <p className="mb-8 text-muted">Help starts with connection. Bring people, resources, and care closer together.</p>
       <p className="font-mono text-[11px] tracking-[0.18em] text-accent">
         {SHELTERS.find((item) => item.id === hall)?.name ?? 'SHELTER'}
       </p>
@@ -61,7 +64,7 @@ export function HomeView() {
           </button>
         ))}
       </div>
-      <h1 className="mt-3 text-4xl font-medium tracking-tight">{demoMode ? 'Choose a desk' : 'Shelter desk'}</h1>
+      <h2 className="mt-6 text-2xl font-medium tracking-tight">{demoMode ? 'Choose a desk' : 'Shelter desk'}</h2>
       <p className="mt-3 text-muted">
         {demoMode
           ? 'This browser keeps one role. A second role needs another browser profile. Clear this device starts a new identity and leaves the old one on the server. This is not real authentication.'

@@ -3,15 +3,15 @@
 @theme {
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-  --color-canvas: #05070b;
-  --color-panel: #0c1016;
-  --color-ink: #e8eef2;
-  --color-muted: #a8b6be;
-  --color-faint: #9eb0b8;
-  --color-panel-2: #141b22;
-  --color-line: #1c2c32;
-  --color-accent: #3ee0c5;
-  --color-accent-ink: #04241e;
+  --color-canvas: #09090c;
+  --color-panel: #111115;
+  --color-ink: #f5f3f5;
+  --color-muted: #aaa5af;
+  --color-faint: #96909c;
+  --color-panel-2: #19151d;
+  --color-line: #29242e;
+  --color-accent: #ed66b7;
+  --color-accent-ink: #260d1e;
 }
 
 html {
@@ -65,3 +65,21 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* Signal visual language shared across shelter workflows. */
+body { background-image: radial-gradient(ellipse at 80% 20%, #ed66b708, transparent 48%); }
+h1,h2 { letter-spacing: -.045em; }
+button.border,a.border { border-radius: 999px; }
+input,select,textarea { border-radius: 12px; }
+button:not(:disabled) { cursor: pointer; }
+header nav a { border-radius: 999px; padding: 0 18px; border-bottom: 0; }
+header nav a[aria-current="page"] { background: #ed66b712; color: #f6b5dc; }
+header > div { min-height: 100px; }
+.signal-home { max-width: 1100px; position:relative; isolation:isolate; }
+.signal-home::after { content:''; position:absolute; z-index:-1; right:0; top:60px; width:440px; height:440px; border:1px solid #ed66b745; border-radius:50%; background: repeating-radial-gradient(ellipse at center,transparent 0 24px,#ed66b722 25px 26px,transparent 27px 40px),repeating-linear-gradient(65deg,transparent 0 36px,#ed66b722 37px 38px,transparent 39px 60px); box-shadow:0 0 90px #ed66b714,inset 0 0 65px #ed66b71a; transform:rotate(-18deg); }
+.signal-home > * { max-width: 520px; }
+.signal-title { font-size:clamp(40px,5vw,64px); line-height:1.05; font-weight:500; margin:24px 0; }
+.signal-title span { display:block; color:#928b97; }
+.signal-footer { max-width:1088px; margin:32px auto 0; padding:24px 20px; border-top:1px solid var(--color-line); color:var(--color-muted); font-size:12px; }
+@media(max-width:1000px) { .signal-home::after { opacity:.25; right:-100px; } }
+@media(max-width:640px) { header nav { order:3; width:100%; } .signal-home::after { top:160px; width:300px; height:300px; right:-80px; opacity:.16; } }

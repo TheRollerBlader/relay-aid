@@ -67,9 +67,7 @@ export function Shell() {
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-8 gap-y-3 px-5 py-4 sm:px-8">
           <div className="flex items-center gap-3">
-            <span className="grid size-8 place-items-center border border-accent" aria-hidden="true">
-              <span className="size-1.5 bg-accent" />
-            </span>
+            <span className="text-4xl text-accent" aria-hidden="true">✳</span>
             <div>
               <p className="font-mono text-[11px] tracking-[0.18em] text-accent">SHELTER DESK</p>
               <p className="text-lg font-medium leading-none">RelayAid</p>
@@ -123,6 +121,7 @@ export function Shell() {
       <main id="main" className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8">
         <Outlet />
       </main>
+      <footer className="signal-footer">Made of people. Connected by care. <span className="float-right">RelayAid · A little closer, together</span></footer>
     </div>
   )
 }
