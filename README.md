@@ -1,75 +1,190 @@
+<div align="center">
+
 # RelayAid
 
-A shelter desk for water and charging requests. The receipt only moves when the server confirms it.
+### Different needs. One community.
 
-Screenshots below are the local demo with Spacetime off. Charts and the allocation diagram are the deterministic matcher’s worked examples, not counts from a live shelter.
+A shelter desk that connects people with water, charging, and the people who can help.
 
-## The desk
+**React · TypeScript · SpacetimeDB**
 
-<img src="docs/readme/home.png" alt="RelayAid home: North Hall selected, with Resident, Coordinator, and Volunteer desks" width="880">
+[Quick start](#quick-start) · [How it works](#how-it-works) · [Matcher lab](#matcher-lab) · [Development](#development)
 
-This browser keeps one role. A second role needs another browser profile.
+</div>
 
-<img src="docs/readme/request.png" alt="Resident request screen with quantity 2 and Water or Charging" width="440">
-<img src="docs/readme/review.png" alt="Review step: You're asking for 2 water, before send" width="440">
+![RelayAid's minimal homepage with an animated wireframe globe and three role choices](docs/readme/home-minimal.jpg)
 
-<img src="docs/readme/queue.png" alt="Coordinator queue with status and type filters, waiting to connect" width="440">
-<img src="docs/readme/board.png" alt="Assignment board with North Hall and South Hall points and six task columns" width="440">
+## One shelter. Three desks.
 
-<img src="docs/readme/plans.png" alt="Coordinator plans: compare first-come and suitability, with policy choices" width="880">
+| Desk | Purpose | Entry point |
+| :--- | :--- | :--- |
+| **Resident** | Request water or charging and follow the receipt. | `/r/request` |
+| **Coordinator** | Review requests, manage resources, compare plans, and assign help. | `/c/queue` |
+| **Volunteer** | View assigned tasks and record delivery. | `/v/tasks` |
 
-Until `VITE_SPACETIME_URI` is set, the coordinator list stays on “Connecting to the shelter system…” and plans are not generated yet.
+The homepage keeps the next step simple: choose a shelter, then a desk. A wireframe globe, subtle motion, and scroll reveals connect the experience visually. Reduced-motion preferences are respected.
 
-## How a request moves
+> Screenshots show the local demo. Demo roles are stored on the device and are not real sign-in. Use another browser profile to try a second role.
 
-<img src="docs/readme/states.png" alt="3D steps from Saved here through Received, Seen, Assigned, and Delivered to Confirmed" width="880">
+## Quick start
 
-A save on the device is not delivery. Seen, assigned, delivered, and confirmed appear only after the shelter system records them. An unacknowledged request stays unmatched and does not take capacity.
-
-## One record for three desks
-
-<img src="docs/readme/architecture.png" alt="3D diagram of Resident, Coordinator, and Volunteer desks connected through an outbox to SpacetimeDB, with a solver and a separate Investigate block" width="880">
-
-Resident, coordinator, and volunteer desks read the same module. The outbox holds a request until it can be sent. The solver writes a plan from requests and resources. Investigate calls NVIDIA from the dev server. That key is not part of the browser bundle. The gray link is that server-side path.
-
-## Matcher results
-
-Same two charging requests. Request 1 can use either slot. Request 2 needs the accessible slot. One accessible slot and one general slot are free.
-
-<img src="docs/readme/allocation.png" alt="3D comparison: first-come puts request 1 on the accessible charger and leaves request 2 unmatched; suitability puts request 2 on the accessible charger and request 1 on the general charger" width="880">
-
-<img src="docs/readme/results.png" alt="Bar charts for accessible charging, water stock of 2, a what-if charger, and longest-wait with a stock of 5" width="880">
-
-| Example | Result |
-| --- | --- |
-| First-come, two charging requests | 1 matched. Request 2 unmatched: capacity exhausted. Method: heuristic. |
-| Suitability, same requests | 2 matched. Accessible slot goes to request 2. Method: exact. |
-| First-come, water stock 2, three requests for 1 | Requests 1 and 2 served. Request 3 unmatched: capacity exhausted. |
-| Both requests need an accessible slot | 1 matched. After a what-if adds one accessible charger, 2 matched. The original resource list stays 3 items long. |
-| Longest wait, stock 5 | The waiting household of 5 is served. Three new requests for 1 are unmatched: capacity exhausted. Waiting adds 1 weight for every 30 minutes. That is a declared rule, not a claim of fairness. |
-
-| Acknowledged requests | Suitability method |
-| --- | --- |
-| 2 or 12, default step budget | exact |
-| 13, 20, or 50, stock enough for all | heuristic, all assigned |
-| 2, step budget 1 | fallback, both still assigned |
-
-First-come is always labeled heuristic. Shortage estimates stay unknown below 5 observations. Five observations valued 1, 2, 2, 3, and 4 estimate a range of 1 to 4. That range is not an arrival time.
-
-## Run it
+Use a Node version supported by the installed SpacetimeDB SDK: `^22.23.4`, `^24.22.1`, or `>=26.12.1`.
 
 ```bash
-npm install
-cd spacetimedb && npm install && npm run publish:local
-cd .. && npm run dev
+npm ci
+npm run dev
 ```
 
-Open http://localhost:5173. Spacetime stays off until `VITE_SPACETIME_URI` is set at deploy time. Investigate uses `NEMOTRON_BASE_URL`, `NEMOTRON_API_KEY`, and `NEMOTRON_MODEL` in `.env`.
+Open [localhost:5173](http://localhost:5173). Leave `VITE_SPACETIME_URI` unset for the local desk. Server-backed lists and planning need a running, configured SpacetimeDB module.
 
-- Resident: `/r/request`
-- Coordinator: `/c/queue`
-- Volunteer: `/v/tasks`
+<details>
+<summary><strong>Connect the shelter backend</strong></summary>
 
-## Checks
+With the SpacetimeDB CLI installed and a local server running:
 
-On this tree, `npm test` in `spacetimedb` passed 27 tests: 20 node tests and 7 module and access tests.
+```bash
+cd spacetimedb
+npm ci
+npm run publish:local
+cd ..
+```
+
+Set `VITE_SPACETIME_URI` to your server endpoint in a local `.env` file, then restart Vite. `VITE_SPACETIME_DB_NAME` defaults to `relayaid-demo`.
+
+For Investigate, copy the settings in [`.env.example`](.env.example) and configure `NEMOTRON_BASE_URL`, `NEMOTRON_API_KEY`, and `NEMOTRON_MODEL`. Keep the API key server-side; never prefix it with `VITE_` or commit it.
+
+</details>
+
+## How it works
+
+A local save is not a confirmed delivery. The receipt advances only when the shelter system records the next step.
+
+```mermaid
+flowchart LR
+    A[Saved on device] -->|Outbox retries| B[Received]
+    B --> C[Seen]
+    C --> D[Assigned]
+    D --> E[Delivered]
+    E --> F[Confirmed]
+    style A fill:#19151d,stroke:#827588,color:#fff
+    style B fill:#19151d,stroke:#ed66b7,color:#fff
+    style C fill:#19151d,stroke:#ed66b7,color:#fff
+    style D fill:#19151d,stroke:#ed66b7,color:#fff
+    style E fill:#19151d,stroke:#ed66b7,color:#fff
+    style F fill:#ed66b7,stroke:#ed66b7,color:#260d1e
+```
+
+Unacknowledged requests stay unmatched and do not consume resource capacity.
+
+```mermaid
+flowchart TB
+    R[Resident desk] --> O[Device outbox]
+    O --> DB[(SpacetimeDB)]
+    C[Coordinator desk] <--> DB
+    V[Volunteer desk] <--> DB
+    DB --> S[Deterministic matcher]
+    S --> P[Allocation plan]
+    P --> DB
+    C -. Investigate .-> API[Dev-server endpoint]
+    API --> N[NVIDIA API]
+    style DB fill:#19151d,stroke:#ed66b7,color:#fff
+    style S fill:#19151d,stroke:#ed66b7,color:#fff
+    style O fill:#19151d,stroke:#ed66b7,color:#fff
+```
+
+The three desks share the same module. The outbox holds unsent requests; the matcher computes resource allocations. Investigate uses a separate server-side API path.
+
+## Matcher lab
+
+The chart below is **generated by executing the repository's solver**. These are deterministic examples, not live shelter statistics or performance benchmarks.
+
+![Matched and unmatched requests across five deterministic solver scenarios](docs/readme/matcher-chart.svg)
+
+| Scenario | Matched | Unmatched | Method |
+| :--- | ---: | ---: | :--- |
+| Mixed charging needs · first-come | 1 | 1 | Heuristic |
+| Same requests · suitability | 2 | 0 | Exact |
+| Two accessible requests · current capacity | 1 | 1 | Exact |
+| Same requests · one extra accessible charger | 2 | 0 | Exact |
+| Three one-unit water requests · stock of 2 | 2 | 1 | Heuristic |
+
+In the first pair, one request can use either charger and the other needs an accessible charger. Suitability reserves the accessible slot for the constrained request. In the second pair, a what-if adds capacity without modifying the original resource list.
+
+```mermaid
+flowchart LR
+    subgraph FirstCome[First-come: 1 matched]
+      A[Flexible request] --> B[Accessible charger]
+      C[Accessible request] -.-> D[Unmatched]
+    end
+    subgraph Suitability[Suitability: 2 matched]
+      E[Flexible request] --> F[General charger]
+      G[Accessible request] --> H[Accessible charger]
+    end
+    style D fill:#3d3544,stroke:#aaa5af,color:#fff
+    style F fill:#19151d,stroke:#ed66b7,color:#fff
+    style H fill:#19151d,stroke:#ed66b7,color:#fff
+```
+
+Regenerate the SVG and its machine-readable data together:
+
+```bash
+npm run docs:charts
+```
+
+Source: [`scripts/generate-readme-charts.ts`](scripts/generate-readme-charts.ts) · Output: [`matcher-data.json`](docs/readme/matcher-data.json) · Logic: [`solver.ts`](spacetimedb/src/solver.ts)
+
+<details>
+<summary><strong>Solver boundaries and interpretation</strong></summary>
+
+- First-come is labeled heuristic.
+- Suitability uses exact search for up to 12 acknowledged requests, subject to its step budget. Larger inputs use a heuristic; budget exhaustion is labeled fallback.
+- The longest-wait policy adds one weight per 30 minutes. This is a declared rule, not a claim of fairness. In the existing stock-of-5 fixture, the waiting household requesting 5 units is served before three newer one-unit requests.
+- Shortage estimates remain unknown below five observations. The example values `1, 2, 2, 3, 4` produce a range of `1–4`; that range is not an arrival time.
+
+</details>
+
+## Inside the desk
+
+These workflow screenshots show the earlier interface styling; the homepage image above reflects the current design.
+
+| Request help | Review before sending |
+| :---: | :---: |
+| ![Resident request form](docs/readme/request.png) | ![Resident review step](docs/readme/review.png) |
+
+<details>
+<summary><strong>Coordinator views</strong></summary>
+
+![Coordinator queue](docs/readme/queue.png)
+![Assignment board](docs/readme/board.png)
+![Plan comparison](docs/readme/plans.png)
+
+</details>
+
+## Development
+
+| Command | Purpose |
+| :--- | :--- |
+| `npm run dev` | Start the local Vite app |
+| `npm run build` | Type-check and build the frontend |
+| `npm run lint` | Run Oxlint |
+| `npm run docs:charts` | Recompute README charts from solver fixtures |
+| `cd spacetimedb && npm test` | Run Node tests plus module and access tests |
+
+Run the focused matching checks from the repository root:
+
+```bash
+node --experimental-strip-types --test spacetimedb/src/solver.test.ts
+```
+
+| Location | Contents |
+| :--- | :--- |
+| `src/views/` | Resident, coordinator, and volunteer screens |
+| `src/components/` | Shared UI and app shell |
+| `spacetimedb/src/` | Module, access checks, matcher, and estimates |
+| `client/` | Outbox code and tests |
+| `worker/src/` | Worker guards and Investigate tests |
+| `docs/readme/` | Screenshots, generated chart, and source data |
+
+---
+
+<div align="center">Care starts with connection.</div>
