@@ -15,7 +15,7 @@ export function PlanDetailView() {
   const group = groupPlans(rows).find((item) => item.head.planId.toString() === planId)
   const [pending, setPending] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [confirm, setConfirm] = useState(false)
+  const [confirm, setConfirm] = useState<null | 'approve' | 'reject'>(null)
   const [approvalId, setApprovalId] = useState<string | null>(null)
 
   if (!group) return <p className="text-muted">That plan is not on this desk.</p>
@@ -43,7 +43,7 @@ export function PlanDetailView() {
 
   const reject = async () => {
     if (!connection) return
-    setConfirm(false)
+    setConfirm(null)
     setPending('reject')
     setError(null)
     const result = await runReducer(connection, (current) =>
@@ -54,6 +54,13 @@ export function PlanDetailView() {
   }
 
   const approved = group.head.status === 'approved'
+  const waterUnits = group.served.filter((row) => row.requestKind === 'water').reduce((sum, row) => sum + row.units, 0)
+  const chargerSlots = group.served.filter((row) => row.requestKind !== 'water').reduce((sum, row) => sum + Math.max(1, row.units), 0)
+  const reserved = [
+    chargerSlots > 0 ? `${chargerSlots} charger slot${chargerSlots === 1 ? '' : 's'}` : '',
+    waterUnits > 0 ? `${waterUnits} water unit${waterUnits === 1 ? '' : 's'}` : '',
+  ].filter(Boolean)
+  const approveEffect = reserved.length > 0 ? `This reserves ${reserved.join(' and ')}.` : 'No one is matched, so this reserves nothing.'
 
   return (
     <div>
@@ -101,10 +108,10 @@ export function PlanDetailView() {
         </section>
       </div>
       <div className="mt-6 flex flex-wrap gap-3">
-        <button type="button" disabled={!canApprove} onClick={() => void approve()} className={primaryButton}>
+        <button type="button" disabled={!canApprove} onClick={() => setConfirm('approve')} className={primaryButton}>
           {pending === 'approve' ? 'Approving…' : 'Approve this plan'}
         </button>
-        <button type="button" disabled={!connection || group.head.status === 'rejected' || pending !== ''} onClick={() => setConfirm(true)} className={quietButton}>
+        <button type="button" disabled={!connection || group.head.status === 'rejected' || pending !== ''} onClick={() => setConfirm('reject')} className={quietButton}>
           Reject plan
         </button>
       </div>
@@ -116,11 +123,16 @@ export function PlanDetailView() {
       </aside>
       {confirm && (
         <Dialog
-          title="Reject this plan?"
-          body="Nothing is reserved. The plan is discarded."
-          confirmLabel="Reject plan"
-          onConfirm={() => void reject()}
-          onClose={() => setConfirm(false)}
+          title={confirm === 'approve' ? 'Approve this plan?' : 'Reject this plan?'}
+          body={confirm === 'approve' ? approveEffect : 'Nothing is reserved. The plan is discarded.'}
+          confirmLabel={confirm === 'approve' ? 'Approve this plan' : 'Reject plan'}
+          onConfirm={() => {
+            const action = confirm
+            setConfirm(null)
+            if (action === 'approve') void approve()
+            else void reject()
+          }}
+          onClose={() => setConfirm(null)}
         />
       )}
     </div>

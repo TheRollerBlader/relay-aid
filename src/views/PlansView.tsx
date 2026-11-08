@@ -49,10 +49,36 @@ export function PlansView() {
       <h1 className="mt-3 text-4xl font-medium tracking-tight">Plans</h1>
       <p className="mt-3 max-w-2xl text-muted">{difference(pair.fcfs, pair.suitability)}</p>
       <div className="mt-6 flex flex-wrap gap-3">
-        <button type="button" disabled={!connection || pending} onClick={() => void generate('fcfs', [], 'most_requests')} className={primaryButton}>
+        <button
+          type="button"
+          disabled={!connection || pending}
+          onClick={() => {
+            void (async () => {
+              setPending(true)
+              setError(null)
+              const first = await runReducer(connection, (current) =>
+                current.reducers.generatePlan({ shelterId: session.shelterId, strategy: 'fcfs', whatIf: [], policy: 'most_requests' }),
+              )
+              if (!first.ok) {
+                setPending(false)
+                setError(first.text)
+                return
+              }
+              const second = await runReducer(connection, (current) =>
+                current.reducers.generatePlan({ shelterId: session.shelterId, strategy: 'suitability', whatIf: [], policy: 'most_requests' }),
+              )
+              setPending(false)
+              if (!second.ok) setError(second.text)
+            })()
+          }}
+          className={primaryButton}
+        >
+          {pending ? 'Generating…' : 'Compare first-come and suitability'}
+        </button>
+        <button type="button" disabled={!connection || pending} onClick={() => void generate('fcfs', [], 'most_requests')} className="inline-flex min-h-12 items-center border border-line px-4 text-sm">
           {pending ? 'Generating…' : 'Generate first-come'}
         </button>
-        <button type="button" disabled={!connection || pending} onClick={() => void generate('suitability', [], 'most_requests')} className={primaryButton}>
+        <button type="button" disabled={!connection || pending} onClick={() => void generate('suitability', [], 'most_requests')} className="inline-flex min-h-12 items-center border border-line px-4 text-sm">
           {pending ? 'Generating…' : 'Generate suitability'}
         </button>
         {POLICIES.map((policy) => (
@@ -91,15 +117,11 @@ export function PlansView() {
       <aside className="mt-8 border border-line bg-panel p-4">
         <h2 className="font-mono text-[11px] tracking-[0.16em] text-faint">ASSISTANT</h2>
         <p className="mt-3 text-sm">
-          {localRun
-            ? `${localRun.live ? 'Live' : 'Fallback'}: ${localRun.explanation}`
-            : latestJob
-            ? `${latestJob.live ? 'Live' : latestJob.state === 'fallback' ? 'Fallback' : latestJob.state}: ${latestJob.explanation || 'Waiting for the assistant.'}`
-            : latestRun
-              ? `${latestRun.outcome === 'proposal' ? 'Live' : 'Fallback'}: ${latestRun.explanation}`
-              : 'No investigation yet. A run without a configured model is labelled fallback.'}
+          {assistantText(localRun, latestJob, latestRun)}
         </p>
-        {latestJob?.rejectReason && <p className="mt-2 text-sm text-muted">Reason: {latestJob.rejectReason}</p>}
+        {latestJob?.rejectReason && (
+          <p className="mt-2 text-sm">The assistant's proposal didn't match the solver results and was discarded.</p>
+        )}
         {localRun && localRun.trace.length > 0 && (
           <ol className="mt-3 space-y-1 text-sm text-muted">
             {localRun.trace.map((line, index) => (
@@ -176,6 +198,22 @@ export function PlansView() {
       )}
     </div>
   )
+}
+
+const FALLBACK = 'Assistant unavailable: showing deterministic plans only (no AI).'
+
+function assistantText(
+  localRun: { live: boolean; explanation: string } | null,
+  latestJob: { live?: boolean; state?: string; explanation?: string } | undefined,
+  latestRun: { outcome?: string; explanation?: string } | undefined,
+): string {
+  if (localRun) return localRun.live ? localRun.explanation : FALLBACK
+  if (latestJob) {
+    if (!latestJob.live || latestJob.state === 'fallback') return FALLBACK
+    return latestJob.explanation || 'Waiting for the assistant.'
+  }
+  if (latestRun) return latestRun.outcome === 'proposal' ? latestRun.explanation || '' : FALLBACK
+  return FALLBACK
 }
 
 function traceLines(toolCalls: string): string[] {

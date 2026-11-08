@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { primaryButton } from '../components/Dialog'
 import { BoltIcon, DropIcon } from '../components/Icons'
@@ -23,16 +23,18 @@ export function RequestView() {
   const [errors, setErrors] = useState<string[]>([])
   const [sending, setSending] = useState(false)
 
+  useEffect(() => {
+    if (errors.length > 0) summary.current?.focus()
+  }, [errors])
+
   function validate(): number | null {
     if (!kind) {
       setErrors(['Choose water or charging.'])
-      summary.current?.focus()
       return null
     }
     if (kind === 'water') {
       if (!/^[1-9]\d*$/.test(quantity) || Number(quantity) > 20) {
         setErrors(['Enter a whole number of water from 1 to 20.'])
-        summary.current?.focus()
         return null
       }
       return Number(quantity)
@@ -117,13 +119,15 @@ export function RequestView() {
         </div>
       ) : (
         <>
-          <label className="mt-4 flex min-h-14 items-center gap-4 border border-line bg-panel px-4 py-3">
-            <input type="checkbox" checked={accessible} onChange={(event) => setAccessible(event.target.checked)} className="size-5 accent-accent" />
-            <span>
-              <span className="block">I need an accessible charging spot</span>
-              <span className="block text-sm text-muted">Only tell us what you need to use the spot. Don't include health details.</span>
-            </span>
-          </label>
+          {kind === 'charging' && (
+            <label className="mt-4 flex min-h-14 items-center gap-4 border border-line bg-panel px-4 py-3">
+              <input type="checkbox" checked={accessible} onChange={(event) => setAccessible(event.target.checked)} className="size-5 accent-accent" />
+              <span>
+                <span className="block">I need an accessible charging spot</span>
+                <span className="block text-sm text-muted">Only tell us what you need to use the spot. Don't include health details.</span>
+              </span>
+            </label>
+          )}
           {kind === 'water' && (
             <label className="mt-4 block text-sm">
               Quantity, from 1 to 20

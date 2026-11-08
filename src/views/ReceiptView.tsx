@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { primaryButton } from '../components/Dialog'
+import { Dialog, primaryButton } from '../components/Dialog'
 import { ErrorBanner } from '../components/ErrorBanner'
 import { StatusBadge } from '../components/StatusBadge'
 import {
@@ -32,6 +32,7 @@ export function ReceiptView() {
   const [progress] = useRows(tables.myProgress)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [confirmCancel, setConfirmCancel] = useState(false)
   const server = requests.find((row) => row.clientRequestId === clientRequestId)
   const local = items.find((item) => item.clientRequestId === clientRequestId)
 
@@ -121,9 +122,21 @@ export function ReceiptView() {
         <p className="mt-4 text-sm">Staff must release this before it can be cancelled.</p>
       )}
       {canCancel && (
-        <button type="button" disabled={!connection || pending} onClick={() => void cancel()} className={`${primaryButton} mt-6`}>
+        <button type="button" disabled={!connection || pending} onClick={() => setConfirmCancel(true)} className={`${primaryButton} mt-6`}>
           {pending ? 'Cancelling…' : 'Cancel request'}
         </button>
+      )}
+      {confirmCancel && (
+        <Dialog
+          title="Cancel this request?"
+          body="This asks the shelter system to cancel it. The receipt changes only after the server confirms."
+          confirmLabel={pending ? 'Cancelling…' : 'Cancel request'}
+          onConfirm={() => {
+            setConfirmCancel(false)
+            void cancel()
+          }}
+          onClose={() => setConfirmCancel(false)}
+        />
       )}
       <Link to="/r/requests" className="mt-6 inline-flex min-h-12 items-center text-sm text-muted">
         All receipts

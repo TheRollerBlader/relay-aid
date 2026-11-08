@@ -15,7 +15,7 @@ services:
       KC_HOSTNAME: http://localhost:8080
       KC_HEALTH_ENABLED: 'true'
     ports: ["127.0.0.1:8080:8080"]
-    volumes: [keycloak-data:/opt/keycloak/data, ./generated/realm.json:/opt/keycloak/data/import/relayaid.json:ro]
+    volumes: [keycloak-data:/opt/keycloak/data, ./generated/realm.json:/opt/keycloak/data/import/relayaid.json:ro, ./themes/relayaid:/opt/keycloak/themes/relayaid:ro]
     depends_on: [mailpit]
     restart: unless-stopped
   mailpit:

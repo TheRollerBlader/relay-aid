@@ -195,7 +195,7 @@ export function TaskDetailView() {
       )}
       {(task.dispatchState === 'accepted' || task.dispatchState === 'in_progress') && (
         <div className="mt-4 flex flex-wrap gap-3">
-          <button type="button" className={primaryButton} disabled={pending !== ''} onClick={() => void call('done', (current) => current.reducers.completeAssignment({ assignmentId: task.assignmentId }))}>Mark delivered</button>
+          <button type="button" className={primaryButton} disabled={pending !== ''} onClick={() => void call('done', (current) => current.reducers.completeAssignment({ assignmentId: task.assignmentId }))}>{pending === 'done' ? 'Marking done…' : 'Mark done'}</button>
           <button type="button" className="inline-flex min-h-12 items-center px-4 text-sm" disabled={pending !== ''} onClick={() => void call('cant', (current) => current.reducers.reportCantDo({ assignmentId: task.assignmentId, reason: reason || 'cant lift water', actionId: crypto.randomUUID() }))}>Can't do this</button>
         </div>
       )}

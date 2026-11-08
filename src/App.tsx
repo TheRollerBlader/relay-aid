@@ -109,6 +109,12 @@ function RealApp() {
       <main className="mx-auto max-w-xl px-5 py-16">
         <p className="font-mono text-[11px] tracking-[0.18em] text-accent">SIGN IN</p>
         <h1 className="mt-3 text-4xl font-medium">Sign in to the shelter desk</h1>
+        <p className="mt-4 text-muted">
+          Verification mail stays in the local inbox. It is not sent to a real mailbox. After you register, open that inbox and use the newest verification message.
+        </p>
+        <a href="http://localhost:8025" className="mt-3 inline-flex min-h-12 items-center text-accent">
+          Open local inbox
+        </a>
         <button type="button" className="mt-6 min-h-12 border border-accent px-4" onClick={() => void auth.signinRedirect()}>
           Sign in
         </button>
@@ -137,7 +143,7 @@ export default function App() {
         client_id={oidcClientId}
         redirect_uri={window.location.origin}
         response_type="code"
-        scope="openid profile"
+        scope="openid profile email"
         onSigninCallback={() => {
           window.history.replaceState({}, document.title, window.location.pathname)
         }}

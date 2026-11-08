@@ -159,7 +159,10 @@ test('ai jobs are idempotent, leased once, and reject invented evidence', () => 
     codeAs(workerA, ctx => finishAiJob(ctx, queued.jobId, 1n, 'proposal', 'served 2 at shelter-b r1', true)),
     'LEASE_LOST',
   );
-  harness.withReducerTx(workerB, ctx => finishAiJob(ctx, queued.jobId, 2n, 'proposal', 'served 99 at shelter-c r1', true));
+  harness.withReducerTx(workerB, ctx => {
+    appendAiEvent(ctx, queued.jobId, 2n, 1, 'run_plan', 'shelter-a', 'r1', '{"served":2,"dest":"shelter-b"}', true);
+    finishAiJob(ctx, queued.jobId, 2n, 'proposal', 'served 99 at shelter-c r1', true);
+  });
   const rejected = harness.db.aiJob.jobId.find(queued.jobId);
   assert.equal(rejected?.state, 'rejected');
   assert.equal(rejected?.live, false);
