@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useAuth } from 'react-oidc-context'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { demoMode, homeFor, spacetimeEnabled } from '../lib/config'
 import { formatWhen } from '../lib/copy'
 import { stopSharing } from '../lib/liveLocation'
@@ -26,6 +26,7 @@ const LINKS = {
 } as const
 
 export function Shell() {
+  const isHome = useLocation().pathname === '/'
   const session = useSession()
   const [membership, membershipReady] = useRows(tables.myMembership)
   const mine = membership[0]
@@ -69,11 +70,11 @@ export function Shell() {
           <div className="flex items-center gap-3">
             <span className="text-4xl text-accent" aria-hidden="true">✳</span>
             <div>
-              <p className="font-mono text-[11px] tracking-[0.18em] text-accent">SHELTER DESK</p>
+
               <p className="text-lg font-medium leading-none">RelayAid</p>
             </div>
           </div>
-          <nav aria-label="Views" className="flex flex-wrap gap-5">
+          <nav hidden={isHome} aria-label="Views" className="flex flex-wrap gap-5">
             <NavLink to={session.role ? homeFor(session.role) : '/'} className={navClass}>
               Desk
             </NavLink>
@@ -84,6 +85,7 @@ export function Shell() {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-5">
+            {isHome ? <a href="#choose-desk" className="text-sm text-muted hover:text-ink">Get started ↗</a> : <>
             <p className="inline-flex min-h-12 items-center gap-2 font-mono text-xs text-ink">
               <span
                 aria-hidden="true"
@@ -101,27 +103,14 @@ export function Shell() {
             ) : (
               <SignOutButton />
             )}
+            </>}
           </div>
         </div>
       </header>
-      {!spacetimeEnabled ? (
-        <p className="border-b border-line bg-panel px-5 py-3 text-sm sm:px-8">
-          Spacetime is off until deploy. This browser keeps one local desk. Investigate still calls the assistant.
-        </p>
-      ) : demoMode ? (
-        <p className="border-b border-line bg-panel px-5 py-3 text-sm sm:px-8">
-          Demo mode: synthetic shelter, synthetic people. Not real sign-in. One browser profile holds one
-          role. Clear this device starts a new identity. The old one stays on the server.
-        </p>
-      ) : (
-        <p className="border-b border-line bg-panel px-5 py-3 text-sm sm:px-8">
-          Signed in. The shelter assigns the role. This browser does not choose a staff desk.
-        </p>
-      )}
       <main id="main" className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8">
         <Outlet />
       </main>
-      <footer className="signal-footer">Made of people. Connected by care. <span className="float-right">RelayAid · A little closer, together</span></footer>
+      <footer className="signal-footer">RelayAid <span>Care starts with connection.</span></footer>
     </div>
   )
 }
