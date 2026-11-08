@@ -12,6 +12,7 @@ import {
 
 export default {
   jobId: __t.u64(),
+  fence: __t.u64(),
   outcome: __t.string(),
   explanation: __t.string(),
   live: __t.bool(),

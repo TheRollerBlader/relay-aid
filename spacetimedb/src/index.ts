@@ -1,3 +1,5 @@
+import { seedAutonomy, executeAutonomy, gatewaySnapshot, agentSnapshot, userSnapshot, isService } from './autonomy';
+import { autonomyRow } from './schema';
 import { t } from 'spacetimedb/server';
 import type { Ctx } from './logic';
 
@@ -27,6 +29,7 @@ import {
   coordinatorAiEvents,
   coordinatorAiJobs,
   finishAiJob,
+  heartbeatAiJob,
   requestAiJob,
   workerAiJobs,
   workerTransferOffers,
@@ -111,10 +114,11 @@ export { default } from './schema';
 export const init = spacetimedb.init(ctx => {
   seedDemo(ctx);
   applyPublishedEnv(ctx);
+  seedAutonomy(ctx);
 });
 
 export const client_connected = spacetimedb.clientConnected(ctx => {
-  assertSession(readCtx(ctx));
+  if (!isService(readCtx(ctx))) assertSession(readCtx(ctx));
 });
 
 export const client_disconnected = spacetimedb.clientDisconnected(ctx => {
@@ -521,9 +525,15 @@ export const claim_ai_job = spacetimedb.reducer(
   (ctx, args) => claimAiJob(ctx, args.jobId),
 );
 
+export const heartbeat_ai_job = spacetimedb.reducer(
+  { jobId: t.u64(), fence: t.u64() },
+  (ctx, args) => heartbeatAiJob(ctx, args.jobId, args.fence),
+);
+
 export const append_ai_event = spacetimedb.reducer(
   {
     jobId: t.u64(),
+    fence: t.u64(),
     seq: t.u32(),
     toolName: t.string(),
     inputSummary: t.string(),
@@ -532,12 +542,12 @@ export const append_ai_event = spacetimedb.reducer(
     live: t.bool(),
   },
   (ctx, args) =>
-    appendAiEvent(ctx, args.jobId, args.seq, args.toolName, args.inputSummary, args.resultRef, args.resultSummary, args.live),
+    appendAiEvent(ctx, args.jobId, args.fence, args.seq, args.toolName, args.inputSummary, args.resultRef, args.resultSummary, args.live),
 );
 
 export const finish_ai_job = spacetimedb.reducer(
-  { jobId: t.u64(), outcome: t.string(), explanation: t.string(), live: t.bool() },
-  (ctx, args) => finishAiJob(ctx, args.jobId, args.outcome, args.explanation, args.live),
+  { jobId: t.u64(), fence: t.u64(), outcome: t.string(), explanation: t.string(), live: t.bool() },
+  (ctx, args) => finishAiJob(ctx, args.jobId, args.fence, args.outcome, args.explanation, args.live),
 );
 
 export const cancel_ai_job = spacetimedb.reducer(
@@ -628,3 +638,11 @@ export const coordinator_timeline = spacetimedb.view(
   t.array(timelineRow),
   ctx => coordinatorTimeline(readCtx(ctx)),
 );
+
+export const autonomy_command = spacetimedb.reducer(
+  { actorJson:t.string(), commandJson:t.string() },
+  (ctx,args)=>executeAutonomy(ctx,args.actorJson,args.commandJson),
+);
+export const gateway_state = spacetimedb.view({name:'gateway_state',public:true},t.array(autonomyRow),ctx=>gatewaySnapshot(ctx));
+export const agent_work = spacetimedb.view({name:'agent_work',public:true},t.array(autonomyRow),ctx=>agentSnapshot(ctx));
+export const my_cases = spacetimedb.view({name:'my_cases',public:true},t.array(autonomyRow),ctx=>userSnapshot(ctx));

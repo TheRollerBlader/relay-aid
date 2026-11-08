@@ -12,7 +12,7 @@ import {
 
 import {
   WhatIfAdd,
-} from "./types.ts";
+} from "./types";
 
 export default {
   shelterId: __t.string(),

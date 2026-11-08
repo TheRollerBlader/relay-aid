@@ -25,6 +25,7 @@ export async function executeClaimedJob(
   job: ClaimedJob,
   writer: JobWriter,
   fetchImpl: typeof fetch = fetch,
+  signal?: AbortSignal,
 ): Promise<void> {
   const liveTools = modelConfigured(env);
   let seq = 0;
@@ -46,6 +47,8 @@ export async function executeClaimedJob(
       return { id: ref, value };
     },
     fetchImpl,
+    45_000,
+    signal,
   );
   const outcome = result.outcome === 'proposal' || result.outcome === 'rejected' || result.outcome === 'timeout' || result.outcome === 'fallback'
     ? result.outcome

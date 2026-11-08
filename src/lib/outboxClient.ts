@@ -1,3 +1,5 @@
+import {PrivateOutbox,clearAllOutboxes} from '../../client/privateOutbox.ts'
+import {api} from './gateway.ts'
 import { useSyncExternalStore } from 'react'
 import {
   applyServerVersion,
@@ -8,7 +10,6 @@ import {
   noteChecking,
   noteConflict,
   noteRefused,
-  openIndexedDbOutbox,
   pendingFor,
   type OutboxItem,
   type OutboxStore,
@@ -35,116 +36,50 @@ class MemoryMirror implements OutboxStore {
   }
 }
 
-const SCOPE_KEY = 'relayaid-outbox-scope'
 const memory = new MemoryMirror()
-let durable: Awaited<ReturnType<typeof openIndexedDbOutbox>> | null = null
+let durable: PrivateOutbox<OutboxItem> | null = null
 let scope = ''
 let ownerIdentity = ''
-let switchScope = ''
-let view: { ready: boolean; items: OutboxItem[]; heldCount: number; heldLabel: string } = {
-  ready: false,
-  items: [],
-  heldCount: 0,
-  heldLabel: '',
-}
+let epoch=0
+let view: {ready:boolean;items:OutboxItem[]}={ready:false,items:[]}
 const listeners = new Set<() => void>()
-
-export function outboxScope(identity: string, shelterId: string) {
-  return `relayaid-outbox:${identity}:${shelterId}`
+export function outboxScope(identity:string,shelterId:string){return `relayaid-outbox:${identity}:${shelterId}`}
+function publish(ready:boolean){view={ready,items:memory.all().filter(x=>x.ownerIdentity===ownerIdentity)};listeners.forEach(x=>x())}
+export function lockOutbox(){epoch++;durable?.lock();durable=null;memory.clear();scope='';ownerIdentity='';publish(false)}
+export async function bindOutbox(identity:string,shelterId:string){
+ if(!identity)return
+ const next=outboxScope(identity,shelterId)
+ if(scope===next&&view.ready)return
+ lockOutbox();const generation=epoch
+ try{
+  const verified=await api<{ownerIdentity:string;key:string}>('/api/outbox-key')
+  if(generation!==epoch||verified.ownerIdentity!==identity)return
+  const store=await PrivateOutbox.unlock<OutboxItem>(identity,verified.key)
+  const items=await store.all()
+  if(generation!==epoch){store.lock();return}
+  durable=store;ownerIdentity=identity;scope=next
+  items.filter(x=>x.shelterId===shelterId).forEach(x=>memory.put(x));publish(true)
+ }catch{if(generation===epoch)publish(false)}
 }
-
-function publish(ready: boolean) {
-  view = {
-    ready,
-    items: memory.all(),
-    heldCount: switchScope ? view.heldCount : 0,
-    heldLabel: switchScope ? view.heldLabel : '',
-  }
-  listeners.forEach((listener) => listener())
-}
-
-async function loadScope(next: string, identity: string) {
-  memory.clear()
-  durable = await openIndexedDbOutbox(next)
-  scope = next
-  ownerIdentity = identity
-  localStorage.setItem(SCOPE_KEY, next)
-  for (const item of await durable.all()) {
-    memory.put(item.ownerIdentity ? item : { ...item, ownerIdentity: identity })
-  }
-  expireUndelivered(memory, Date.now(), 12 * 60 * 60 * 1000)
-  for (const item of memory.all()) await durable.put(item)
-  publish(true)
-}
-
-export async function bindOutbox(identity: string, shelterId: string) {
-  if (!identity) return
-  const next = outboxScope(identity, shelterId)
-  if (scope === next) return
-  const previous = scope || localStorage.getItem(SCOPE_KEY) || ''
-  const previousIdentity = previous.split(':')[1] ?? ''
-  const unowned = previousIdentity === '' || previousIdentity === 'device'
-  if (previous && previous !== next && !unowned && previousIdentity !== identity) {
-    const old = await openIndexedDbOutbox(previous)
-    const held = (await old.all()).filter((item) => item.status === 'saved_on_device' || item.status === 'sending')
-    if (held.length > 0) {
-      switchScope = previous
-      view = { ...view, heldCount: held.length, heldLabel: previousIdentity.slice(0, 8) }
-    }
-  } else if (previous && previous !== next && unowned) {
-    const old = await openIndexedDbOutbox(previous)
-    const carried = await old.all()
-    await loadScope(next, identity)
-    for (const item of carried) await persist({ ...item, ownerIdentity: item.ownerIdentity || identity })
-    await old.clear()
-    return
-  }
-  await loadScope(next, identity)
-}
-
-export function startOutbox() {
-  if (scope) return
-  const shelter = localStorage.getItem('relayaid-shelter') || 'shelter-a'
-  void bindOutbox(localStorage.getItem('relayaid-owner') || 'device', shelter)
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener)
-  startOutbox()
-  return () => listeners.delete(listener)
-}
-
-export function useOutbox(): { ready: boolean; items: OutboxItem[]; heldCount: number; heldLabel: string } {
-  return useSyncExternalStore(subscribe, () => view, () => view)
-}
-
-export async function keepHeldOutbox() {
-  switchScope = ''
-  view = { ...view, heldCount: 0, heldLabel: '' }
-  publish(view.ready)
-}
-
-export async function eraseHeldOutbox() {
-  if (switchScope) {
-    const old = await openIndexedDbOutbox(switchScope)
-    await old.clear()
-  }
-  switchScope = ''
-  view = { ...view, heldCount: 0, heldLabel: '' }
-  publish(view.ready)
-}
+export function startOutbox(){/* Never infer ownership from localStorage. */}
+function subscribe(listener:()=>void){listeners.add(listener);return()=>{listeners.delete(listener)}}
+export function useOutbox(){return useSyncExternalStore(subscribe,()=>view,()=>view)}
 
 async function persist(item: OutboxItem) {
+  if(!durable||!view.ready||item.ownerIdentity!==ownerIdentity)throw new Error('OWNER_VERIFICATION_REQUIRED')
+  const generation=epoch
+  await durable.put(item)
+  if(generation!==epoch)throw new Error('OWNER_VERIFICATION_REQUIRED')
   memory.put(item)
-  const stored = memory.get(item.clientRequestId)
-  if (stored) await durable?.put(stored)
-  publish(view.ready)
+  publish(true)
 }
 
 export async function saveRequest(
   input: Omit<OutboxItem, 'status' | 'confirmedStateVersion' | 'notice' | 'ownerIdentity'> & { ownerIdentity?: string },
 ): Promise<OutboxItem> {
-  const item = enqueue(memory, { ...input, ownerIdentity: input.ownerIdentity || ownerIdentity || 'device' })
+  const temporary=new MemoryMirror()
+  const existing=memory.get(input.clientRequestId);if(existing)temporary.put(existing)
+  const item = enqueue(temporary, { ...input, ownerIdentity: input.ownerIdentity || ownerIdentity })
   await persist(item)
   return memory.get(item.clientRequestId) ?? item
 }
@@ -201,7 +136,9 @@ export async function retryRequest(clientRequestId: string) {
 }
 
 export async function clearOutbox() {
-  memory.clear()
   await durable?.clear()
-  publish(true)
+  memory.clear()
+  publish(view.ready)
 }
+
+export async function clearDeviceOutboxes(){lockOutbox();await clearAllOutboxes()}

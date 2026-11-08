@@ -17,4 +17,5 @@ export default __t.row({
   snapshotVersion: __t.u64().name("snapshot_version"),
   leaseExpiresAt: __t.timestamp().name("lease_expires_at"),
   leaseOwner: __t.identity().name("lease_owner"),
+  fence: __t.u64(),
 });

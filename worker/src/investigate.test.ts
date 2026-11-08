@@ -40,3 +40,17 @@ test('a missing model never records a live trace', async () => {
   assert.equal(finished?.outcome, 'fallback');
   assert.equal(finished?.live, false);
 });
+
+test('one model response cannot exceed the six tool-call budget', async () => {
+  let executed = 0;
+  const result = await investigate(env, async () => {executed++;return {}}, async () => Response.json({choices:[{message:{tool_calls:Array.from({length:7},(_,i)=>({id:String(i),function:{name:'list_resources',arguments:'{}'}}))}}]}));
+  assert.equal(executed,0);
+  assert.equal(result.explanation,'TOOL_BUDGET_EXCEEDED');
+});
+
+test('a hung provider is aborted at the actual deadline', async () => {
+  let signal: AbortSignal | undefined;
+  const start=Date.now();
+  const result=await investigate(env,async()=>({}), async (_url,init)=>{signal=init?.signal as AbortSignal;return new Promise(()=>{})},25);
+  assert.equal(result.outcome,'timeout');assert.equal(signal?.aborted,true);assert.ok(Date.now()-start<250);
+});

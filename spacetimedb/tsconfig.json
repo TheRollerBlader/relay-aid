@@ -4,10 +4,19 @@
     "skipLibCheck": true,
     "moduleResolution": "bundler",
     "target": "ESNext",
-    "lib": ["ES2021", "dom"],
+    "lib": [
+      "ES2021",
+      "dom"
+    ],
     "module": "ESNext",
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+    "allowImportingTsExtensions": true
   },
-  "include": ["src/index.ts", "src/schema.ts", "src/logic.ts", "src/solver.ts"]
+  "include": [
+    "src/index.ts",
+    "src/schema.ts",
+    "src/logic.ts",
+    "src/solver.ts"
+  ]
 }

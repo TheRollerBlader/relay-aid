@@ -233,6 +233,8 @@ export const aiJob = table(
   },
 );
 
+export const aiJobLease = table({ name: 'ai_job_lease' }, { jobId: t.u64().primaryKey(), fence: t.u64() });
+
 export const aiJobEvent = table(
   { name: 'ai_job_event' },
   {
@@ -530,6 +532,7 @@ export const workerJobRow = t.row('WorkerJobRow', {
   snapshotVersion: t.u64(),
   leaseExpiresAt: t.timestamp(),
   leaseOwner: t.identity(),
+  fence: t.u64(),
 });
 
 export const workerOfferRow = t.row('WorkerOfferRow', {
@@ -547,9 +550,15 @@ export const workerVolunteerRow = t.row('WorkerVolunteerRow', {
   chargerEscort: t.u32(),
 });
 
+export const autonomyState = table({name:'autonomy_state'}, {id:t.string().primaryKey(),json:t.string()});
+export const autonomyConfig = table({name:'autonomy_config'}, {id:t.string().primaryKey(),gateway:t.string(),agent:t.string(),bootstrapAdmin:t.string()});
+export const autonomyRow = t.row('AutonomyRow', {id:t.string().primaryKey(),json:t.string()});
+
 const spacetimedb = schema(
   {
     shelter,
+    autonomyState,
+    autonomyConfig,
     member,
     moduleConfig,
     invite,
@@ -566,6 +575,7 @@ const spacetimedb = schema(
     modelRun,
     aiJob,
     aiJobEvent,
+    aiJobLease,
     taskLocationLatest,
     approvalReceipt,
     volunteerProfile,
@@ -576,6 +586,9 @@ const spacetimedb = schema(
   },
   {
     env: {
+      GATEWAY_IDENTITY: t.string().optional(),
+      AGENT_IDENTITY: t.string().optional(),
+      AUTONOMY_ADMIN_IDENTITY: t.string().optional(),
       AUTH_MODE: t.string().optional(),
       OIDC_ISSUER: t.string().optional(),
       OIDC_AUDIENCE: t.string().optional(),

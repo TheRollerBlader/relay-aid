@@ -107,6 +107,11 @@ export function claimAiJob(ctx: Ctx, jobId: bigint) {
   if (job.state === 'cancelled') fail('INVALID_TRANSITION');
   const expired = leaseOpen(ctx, job);
   if (job.state !== 'queued' && !expired) fail('INVALID_TRANSITION');
+  const lease = ctx.db.aiJobLease.jobId.find(jobId);
+  if (lease) ctx.db.aiJobLease.jobId.update({ jobId, fence: lease.fence + 1n });
+  else ctx.db.aiJobLease.insert({ jobId, fence: 1n });
+  // An expired attempt's partial trace cannot support the next attempt.
+  for (const row of ctx.db.aiJobEvent.iter()) if (row.jobId === jobId) ctx.db.aiJobEvent.eventId.delete(row.eventId);
   ctx.db.aiJob.jobId.update({
     ...job,
     state: 'running',
@@ -116,7 +121,8 @@ export function claimAiJob(ctx: Ctx, jobId: bigint) {
   });
 }
 
-function requireLease(ctx: Ctx, jobId: bigint) {
+function requireLease(ctx: Ctx, jobId: bigint, fence: bigint) {
+  if (ctx.db.aiJobLease.jobId.find(jobId)?.fence !== fence) fail('LEASE_LOST');
   const job = loadJob(ctx, jobId);
   const member = requireMember(ctx, job.shelterId, ['worker']);
   if (job.state === 'cancelled') fail('INVALID_TRANSITION');
@@ -128,6 +134,7 @@ function requireLease(ctx: Ctx, jobId: bigint) {
 export function appendAiEvent(
   ctx: Ctx,
   jobId: bigint,
+  fence: bigint,
   seq: number,
   toolName: string,
   inputSummary: string,
@@ -135,7 +142,7 @@ export function appendAiEvent(
   resultSummary: string,
   live: boolean,
 ) {
-  const job = requireLease(ctx, jobId);
+  const job = requireLease(ctx, jobId, fence);
   if (!Number.isInteger(seq) || seq < 1 || seq > 6) fail('INVALID_INPUT');
   if (toolName.length === 0 || toolName.length > 80 || resultRef.length === 0 || resultRef.length > 16) fail('INVALID_INPUT');
   const prior = [...ctx.db.aiJobEvent.iter()].find(item => item.jobId === jobId && item.seq === seq);
@@ -154,8 +161,8 @@ export function appendAiEvent(
   });
 }
 
-export function finishAiJob(ctx: Ctx, jobId: bigint, outcome: string, explanation: string, live: boolean) {
-  const job = requireLease(ctx, jobId);
+export function finishAiJob(ctx: Ctx, jobId: bigint, fence: bigint, outcome: string, explanation: string, live: boolean) {
+  const job = requireLease(ctx, jobId, fence);
   if (explanation.length > 2000) fail('INVALID_INPUT');
   const liveSnapshot = ctx.db.shelterVersion.shelterId.find(job.shelterId)?.snapshotVersion;
   if (outcome === 'proposal' && liveSnapshot !== undefined && liveSnapshot !== job.snapshotVersion) {
@@ -205,6 +212,11 @@ export function finishAiJob(ctx: Ctx, jobId: bigint, outcome: string, explanatio
   logEvent(ctx, job.shelterId, 'ai_job_finished', job.jobClientId, reviewed.outcome, reviewed.rejectReason);
 }
 
+export function heartbeatAiJob(ctx: Ctx, jobId: bigint, fence: bigint) {
+  const job = requireLease(ctx, jobId, fence);
+  ctx.db.aiJob.jobId.update({ ...job, leaseExpiresAt: new Timestamp(ctx.timestamp.microsSinceUnixEpoch + LEASE_MICROS), updatedAt: ctx.timestamp });
+}
+
 export function cancelAiJob(ctx: Ctx, jobId: bigint) {
   const job = loadJob(ctx, jobId);
   requireMember(ctx, job.shelterId, ['coordinator']);
@@ -220,13 +232,13 @@ export function cancelAiJob(ctx: Ctx, jobId: bigint) {
 
 export function coordinatorAiJobs(ctx: { db: Ctx['db']; sender: Identity }) {
   const member = ctx.db.member.identity.find(ctx.sender);
-  if (!member || member.role !== 'coordinator') return [];
+  if (!member || !member.active || member.role !== 'coordinator') return [];
   return [...ctx.db.aiJob.iter()].filter(job => job.shelterId === member.shelterId);
 }
 
 export function coordinatorAiEvents(ctx: { db: Ctx['db']; sender: Identity }) {
   const member = ctx.db.member.identity.find(ctx.sender);
-  if (!member || member.role !== 'coordinator') return [];
+  if (!member || !member.active || member.role !== 'coordinator') return [];
   return [...ctx.db.aiJobEvent.iter()].filter(item => item.shelterId === member.shelterId);
 }
 
@@ -242,6 +254,7 @@ export function workerAiJobs(ctx: { db: Ctx['db']; sender: Identity }) {
       snapshotVersion: job.snapshotVersion,
       leaseExpiresAt: job.leaseExpiresAt,
       leaseOwner: job.leaseOwner,
+      fence: ctx.db.aiJobLease.jobId.find(job.jobId)?.fence ?? 0n,
     }));
 }
 

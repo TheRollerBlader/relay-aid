@@ -192,8 +192,10 @@ export function openIndexedDbOutbox(dbName = 'relayaid-outbox'): Promise<AsyncOu
           return done<OutboxItem | undefined>(query);
         },
         async put(item) {
-          const query = db.transaction('outbox', 'readwrite').objectStore('outbox').put(item);
-          await done(query);
+          const tx = db.transaction('outbox', 'readwrite');
+          const completed = new Promise<void>((resolve,reject)=>{tx.oncomplete=()=>resolve();tx.onabort=()=>reject(tx.error??new Error('STORAGE_FAILED'));tx.onerror=()=>reject(tx.error??new Error('STORAGE_FAILED'))});
+          tx.objectStore('outbox').put(item);
+          await completed;
         },
         async all() {
           const query = db.transaction('outbox', 'readonly').objectStore('outbox').getAll();

@@ -4,7 +4,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { demoMode, homeFor, spacetimeEnabled } from '../lib/config'
 import { formatWhen } from '../lib/copy'
 import { stopSharing } from '../lib/liveLocation'
-import { bindOutbox, clearOutbox, eraseHeldOutbox, keepHeldOutbox, useOutbox } from '../lib/outboxClient'
+import { bindOutbox, clearDeviceOutboxes, lockOutbox } from '../lib/outboxClient'
 import { tables } from '../module_bindings/index.ts'
 import { canUseServer, clearDeviceStorage, setDemoRole, setOwner, setShelter, useSession } from '../lib/session'
 import { useRows } from '../lib/tables'
@@ -28,7 +28,6 @@ const LINKS = {
 export function Shell() {
   const session = useSession()
   const [membership, membershipReady] = useRows(tables.myMembership)
-  const outbox = useOutbox()
   const mine = membership[0]
   useEffect(() => {
     if (!spacetimeEnabled || !membershipReady) return
@@ -121,19 +120,6 @@ export function Shell() {
           Signed in. The shelter assigns the role. This browser does not choose a staff desk.
         </p>
       )}
-      {outbox.heldCount > 0 && (
-        <div className="border-b border-line px-5 py-4 text-sm sm:px-8">
-          <p>You have {outbox.heldCount} unsent request from {outbox.heldLabel}. Keep it on this device or erase it?</p>
-          <div className="mt-3 flex gap-3">
-            <button type="button" className="min-h-12 border border-line px-4" onClick={() => void keepHeldOutbox()}>
-              Keep it on this device
-            </button>
-            <button type="button" className="min-h-12 border border-accent px-4" onClick={() => void eraseHeldOutbox()}>
-              Erase it
-            </button>
-          </div>
-        </div>
-      )}
       <main id="main" className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8">
         <Outlet />
       </main>
@@ -155,6 +141,7 @@ function SignOutButton() {
       className="inline-flex min-h-12 items-center font-mono text-xs text-muted hover:text-ink"
       onClick={() => {
         stopSharing()
+        lockOutbox()
         setOwner('')
         setDemoRole(null)
         clearDeviceStorage()
@@ -167,7 +154,7 @@ function SignOutButton() {
 }
 
 async function clearDevice() {
-  await clearOutbox()
+  await clearDeviceOutboxes()
   clearDeviceStorage()
   window.location.assign('/')
 }

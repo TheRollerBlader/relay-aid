@@ -34,92 +34,104 @@ import {
 } from "spacetimedb";
 
 // Import all reducer arg schemas
-import AcceptInviteReducer from "./accept_invite_reducer.ts";
-import AcceptTaskReducer from "./accept_task_reducer.ts";
-import AcknowledgeRequestReducer from "./acknowledge_request_reducer.ts";
-import AppendAiEventReducer from "./append_ai_event_reducer.ts";
-import ApprovePlanReducer from "./approve_plan_reducer.ts";
-import ApproveTransferReducer from "./approve_transfer_reducer.ts";
-import AssignFollowUpReducer from "./assign_follow_up_reducer.ts";
-import AssignVolunteerReducer from "./assign_volunteer_reducer.ts";
-import CancelAiJobReducer from "./cancel_ai_job_reducer.ts";
-import CancelRequestReducer from "./cancel_request_reducer.ts";
-import CancelTransferReducer from "./cancel_transfer_reducer.ts";
-import CantReceiveReducer from "./cant_receive_reducer.ts";
-import CheckInTaskReducer from "./check_in_task_reducer.ts";
-import ClaimAiJobReducer from "./claim_ai_job_reducer.ts";
-import ClaimDemoRoleReducer from "./claim_demo_role_reducer.ts";
-import CollectTransferReducer from "./collect_transfer_reducer.ts";
-import CompleteAssignmentReducer from "./complete_assignment_reducer.ts";
-import ConfirmDeliveryReducer from "./confirm_delivery_reducer.ts";
-import CreateInviteReducer from "./create_invite_reducer.ts";
-import CreateShortageReducer from "./create_shortage_reducer.ts";
-import DeclineTaskReducer from "./decline_task_reducer.ts";
-import DisputeDeliveryReducer from "./dispute_delivery_reducer.ts";
-import EndChargingSessionReducer from "./end_charging_session_reducer.ts";
-import FinishAiJobReducer from "./finish_ai_job_reducer.ts";
-import FlagFollowUpReducer from "./flag_follow_up_reducer.ts";
-import FlagOverdueReducer from "./flag_overdue_reducer.ts";
-import GeneratePlanReducer from "./generate_plan_reducer.ts";
-import GrantMembershipReducer from "./grant_membership_reducer.ts";
-import OfferTaskReducer from "./offer_task_reducer.ts";
-import OfferTransferReducer from "./offer_transfer_reducer.ts";
-import OfferTransferTaskReducer from "./offer_transfer_task_reducer.ts";
-import ReassignTaskReducer from "./reassign_task_reducer.ts";
-import ReceiveTransferReducer from "./receive_transfer_reducer.ts";
-import RejectPlanReducer from "./reject_plan_reducer.ts";
-import RejectRequestReducer from "./reject_request_reducer.ts";
-import ReleaseAssignmentReducer from "./release_assignment_reducer.ts";
-import ReportCantDoReducer from "./report_cant_do_reducer.ts";
-import RequestAiJobReducer from "./request_ai_job_reducer.ts";
-import RequestInvestigationReducer from "./request_investigation_reducer.ts";
-import RespondTransferTaskReducer from "./respond_transfer_task_reducer.ts";
-import SetHumanPriorityReducer from "./set_human_priority_reducer.ts";
-import SetServeByReducer from "./set_serve_by_reducer.ts";
-import SetVolunteerProfileReducer from "./set_volunteer_profile_reducer.ts";
-import SplitFulfillmentReducer from "./split_fulfillment_reducer.ts";
-import StartTaskReducer from "./start_task_reducer.ts";
-import StopTaskLocationReducer from "./stop_task_location_reducer.ts";
-import SubmitModelProposalReducer from "./submit_model_proposal_reducer.ts";
-import SubmitRequestReducer from "./submit_request_reducer.ts";
-import UpdateResourceReducer from "./update_resource_reducer.ts";
-import UpdateTaskLocationReducer from "./update_task_location_reducer.ts";
+import AcceptInviteReducer from "./accept_invite_reducer";
+import AcceptTaskReducer from "./accept_task_reducer";
+import AcknowledgeRequestReducer from "./acknowledge_request_reducer";
+import AppendAiEventReducer from "./append_ai_event_reducer";
+import ApprovePlanReducer from "./approve_plan_reducer";
+import ApproveTransferReducer from "./approve_transfer_reducer";
+import AssignFollowUpReducer from "./assign_follow_up_reducer";
+import AssignVolunteerReducer from "./assign_volunteer_reducer";
+import AutonomyCommandReducer from "./autonomy_command_reducer";
+import CancelAiJobReducer from "./cancel_ai_job_reducer";
+import CancelRequestReducer from "./cancel_request_reducer";
+import CancelTransferReducer from "./cancel_transfer_reducer";
+import CantReceiveReducer from "./cant_receive_reducer";
+import CheckInTaskReducer from "./check_in_task_reducer";
+import ClaimAiJobReducer from "./claim_ai_job_reducer";
+import ClaimDemoRoleReducer from "./claim_demo_role_reducer";
+import CollectTransferReducer from "./collect_transfer_reducer";
+import CompleteAssignmentReducer from "./complete_assignment_reducer";
+import ConfirmDeliveryReducer from "./confirm_delivery_reducer";
+import CreateInviteReducer from "./create_invite_reducer";
+import CreateShortageReducer from "./create_shortage_reducer";
+import DeclineTaskReducer from "./decline_task_reducer";
+import DisputeDeliveryReducer from "./dispute_delivery_reducer";
+import EndChargingSessionReducer from "./end_charging_session_reducer";
+import FinishAiJobReducer from "./finish_ai_job_reducer";
+import FlagFollowUpReducer from "./flag_follow_up_reducer";
+import FlagOverdueReducer from "./flag_overdue_reducer";
+import GeneratePlanReducer from "./generate_plan_reducer";
+import GrantMembershipReducer from "./grant_membership_reducer";
+import HeartbeatAiJobReducer from "./heartbeat_ai_job_reducer";
+import OfferTaskReducer from "./offer_task_reducer";
+import OfferTransferReducer from "./offer_transfer_reducer";
+import OfferTransferTaskReducer from "./offer_transfer_task_reducer";
+import ReassignTaskReducer from "./reassign_task_reducer";
+import ReceiveTransferReducer from "./receive_transfer_reducer";
+import RejectPlanReducer from "./reject_plan_reducer";
+import RejectRequestReducer from "./reject_request_reducer";
+import ReleaseAssignmentReducer from "./release_assignment_reducer";
+import ReportCantDoReducer from "./report_cant_do_reducer";
+import RequestAiJobReducer from "./request_ai_job_reducer";
+import RequestInvestigationReducer from "./request_investigation_reducer";
+import RespondTransferTaskReducer from "./respond_transfer_task_reducer";
+import SetHumanPriorityReducer from "./set_human_priority_reducer";
+import SetServeByReducer from "./set_serve_by_reducer";
+import SetVolunteerProfileReducer from "./set_volunteer_profile_reducer";
+import SplitFulfillmentReducer from "./split_fulfillment_reducer";
+import StartTaskReducer from "./start_task_reducer";
+import StopTaskLocationReducer from "./stop_task_location_reducer";
+import SubmitModelProposalReducer from "./submit_model_proposal_reducer";
+import SubmitRequestReducer from "./submit_request_reducer";
+import UpdateResourceReducer from "./update_resource_reducer";
+import UpdateTaskLocationReducer from "./update_task_location_reducer";
 
 // Import all procedure arg schemas
 
 // Import all table schema definitions
-import CoordinatorAiEventsRow from "./coordinator_ai_events_table.ts";
-import CoordinatorAiJobsRow from "./coordinator_ai_jobs_table.ts";
-import CoordinatorBoardRow from "./coordinator_board_table.ts";
-import CoordinatorEstimatesRow from "./coordinator_estimates_table.ts";
-import CoordinatorFollowUpsRow from "./coordinator_follow_ups_table.ts";
-import CoordinatorInvitesRow from "./coordinator_invites_table.ts";
-import CoordinatorLocationsRow from "./coordinator_locations_table.ts";
-import CoordinatorModelRunsRow from "./coordinator_model_runs_table.ts";
-import CoordinatorPlanDetailsRow from "./coordinator_plan_details_table.ts";
-import CoordinatorPlansRow from "./coordinator_plans_table.ts";
-import CoordinatorQueueRow from "./coordinator_queue_table.ts";
-import CoordinatorResourcesRow from "./coordinator_resources_table.ts";
-import CoordinatorTimelineRow from "./coordinator_timeline_table.ts";
-import CoordinatorTransfersRow from "./coordinator_transfers_table.ts";
-import CoordinatorVolunteersRow from "./coordinator_volunteers_table.ts";
-import MyAssignmentsRow from "./my_assignments_table.ts";
-import MyMembershipRow from "./my_membership_table.ts";
-import MyProgressRow from "./my_progress_table.ts";
-import MyRequestsRow from "./my_requests_table.ts";
-import MyTransfersRow from "./my_transfers_table.ts";
-import RecentEventsRow from "./recent_events_table.ts";
-import SessionShelterRow from "./session_shelter_table.ts";
-import WorkerAiJobsRow from "./worker_ai_jobs_table.ts";
-import WorkerRequestsRow from "./worker_requests_table.ts";
-import WorkerResourcesRow from "./worker_resources_table.ts";
-import WorkerTransferOffersRow from "./worker_transfer_offers_table.ts";
-import WorkerVolunteerCountsRow from "./worker_volunteer_counts_table.ts";
+import AgentWorkRow from "./agent_work_table";
+import CoordinatorAiEventsRow from "./coordinator_ai_events_table";
+import CoordinatorAiJobsRow from "./coordinator_ai_jobs_table";
+import CoordinatorBoardRow from "./coordinator_board_table";
+import CoordinatorEstimatesRow from "./coordinator_estimates_table";
+import CoordinatorFollowUpsRow from "./coordinator_follow_ups_table";
+import CoordinatorInvitesRow from "./coordinator_invites_table";
+import CoordinatorLocationsRow from "./coordinator_locations_table";
+import CoordinatorModelRunsRow from "./coordinator_model_runs_table";
+import CoordinatorPlanDetailsRow from "./coordinator_plan_details_table";
+import CoordinatorPlansRow from "./coordinator_plans_table";
+import CoordinatorQueueRow from "./coordinator_queue_table";
+import CoordinatorResourcesRow from "./coordinator_resources_table";
+import CoordinatorTimelineRow from "./coordinator_timeline_table";
+import CoordinatorTransfersRow from "./coordinator_transfers_table";
+import CoordinatorVolunteersRow from "./coordinator_volunteers_table";
+import GatewayStateRow from "./gateway_state_table";
+import MyAssignmentsRow from "./my_assignments_table";
+import MyCasesRow from "./my_cases_table";
+import MyMembershipRow from "./my_membership_table";
+import MyProgressRow from "./my_progress_table";
+import MyRequestsRow from "./my_requests_table";
+import MyTransfersRow from "./my_transfers_table";
+import RecentEventsRow from "./recent_events_table";
+import SessionShelterRow from "./session_shelter_table";
+import WorkerAiJobsRow from "./worker_ai_jobs_table";
+import WorkerRequestsRow from "./worker_requests_table";
+import WorkerResourcesRow from "./worker_resources_table";
+import WorkerTransferOffersRow from "./worker_transfer_offers_table";
+import WorkerVolunteerCountsRow from "./worker_volunteer_counts_table";
 
 /** Type-only namespace exports for generated type groups. */
 
 /** The schema information for all tables in this module. This is defined the same was as the tables would have been defined in the server. */
 const tablesSchema = __schema({
+  agentWork: __table({
+    name: 'agent_work',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, AgentWorkRow),
   coordinatorAiEvents: __table({
     name: 'coordinator_ai_events',
     indexes: [
@@ -225,6 +237,13 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, CoordinatorVolunteersRow),
+  gatewayState: __table({
+    name: 'gateway_state',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, GatewayStateRow),
   myAssignments: __table({
     name: 'my_assignments',
     indexes: [
@@ -232,6 +251,13 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, MyAssignmentsRow),
+  myCases: __table({
+    name: 'my_cases',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, MyCasesRow),
   myMembership: __table({
     name: 'my_membership',
     indexes: [
@@ -321,6 +347,7 @@ const reducersSchema = __reducers(
   __reducerSchema("approve_transfer", ApproveTransferReducer),
   __reducerSchema("assign_follow_up", AssignFollowUpReducer),
   __reducerSchema("assign_volunteer", AssignVolunteerReducer),
+  __reducerSchema("autonomy_command", AutonomyCommandReducer),
   __reducerSchema("cancel_ai_job", CancelAiJobReducer),
   __reducerSchema("cancel_request", CancelRequestReducer),
   __reducerSchema("cancel_transfer", CancelTransferReducer),
@@ -341,6 +368,7 @@ const reducersSchema = __reducers(
   __reducerSchema("flag_overdue", FlagOverdueReducer),
   __reducerSchema("generate_plan", GeneratePlanReducer),
   __reducerSchema("grant_membership", GrantMembershipReducer),
+  __reducerSchema("heartbeat_ai_job", HeartbeatAiJobReducer),
   __reducerSchema("offer_task", OfferTaskReducer),
   __reducerSchema("offer_transfer", OfferTransferReducer),
   __reducerSchema("offer_transfer_task", OfferTransferTaskReducer),
@@ -371,6 +399,8 @@ const proceduresSchema = __procedures(
 
 type __SchemaWithTableAccessorAliases = Omit<typeof tablesSchema.schemaType, "tables"> & {
   tables: typeof tablesSchema.schemaType.tables & {
+    /** @deprecated Use `agentWork` instead. This alias will be removed in the next major version. */
+    readonly "agent_work": Omit<typeof tablesSchema.schemaType.tables["agentWork"], "accessorName"> & { readonly accessorName: "agent_work" };
     /** @deprecated Use `coordinatorAiEvents` instead. This alias will be removed in the next major version. */
     readonly "coordinator_ai_events": Omit<typeof tablesSchema.schemaType.tables["coordinatorAiEvents"], "accessorName"> & { readonly accessorName: "coordinator_ai_events" };
     /** @deprecated Use `coordinatorAiJobs` instead. This alias will be removed in the next major version. */
@@ -401,8 +431,12 @@ type __SchemaWithTableAccessorAliases = Omit<typeof tablesSchema.schemaType, "ta
     readonly "coordinator_transfers": Omit<typeof tablesSchema.schemaType.tables["coordinatorTransfers"], "accessorName"> & { readonly accessorName: "coordinator_transfers" };
     /** @deprecated Use `coordinatorVolunteers` instead. This alias will be removed in the next major version. */
     readonly "coordinator_volunteers": Omit<typeof tablesSchema.schemaType.tables["coordinatorVolunteers"], "accessorName"> & { readonly accessorName: "coordinator_volunteers" };
+    /** @deprecated Use `gatewayState` instead. This alias will be removed in the next major version. */
+    readonly "gateway_state": Omit<typeof tablesSchema.schemaType.tables["gatewayState"], "accessorName"> & { readonly accessorName: "gateway_state" };
     /** @deprecated Use `myAssignments` instead. This alias will be removed in the next major version. */
     readonly "my_assignments": Omit<typeof tablesSchema.schemaType.tables["myAssignments"], "accessorName"> & { readonly accessorName: "my_assignments" };
+    /** @deprecated Use `myCases` instead. This alias will be removed in the next major version. */
+    readonly "my_cases": Omit<typeof tablesSchema.schemaType.tables["myCases"], "accessorName"> & { readonly accessorName: "my_cases" };
     /** @deprecated Use `myMembership` instead. This alias will be removed in the next major version. */
     readonly "my_membership": Omit<typeof tablesSchema.schemaType.tables["myMembership"], "accessorName"> & { readonly accessorName: "my_membership" };
     /** @deprecated Use `myProgress` instead. This alias will be removed in the next major version. */
@@ -443,6 +477,7 @@ const REMOTE_MODULE = {
 >;
 
 const tableAccessorAliases = {
+  "agent_work": "agentWork",
   "coordinator_ai_events": "coordinatorAiEvents",
   "coordinator_ai_jobs": "coordinatorAiJobs",
   "coordinator_board": "coordinatorBoard",
@@ -458,7 +493,9 @@ const tableAccessorAliases = {
   "coordinator_timeline": "coordinatorTimeline",
   "coordinator_transfers": "coordinatorTransfers",
   "coordinator_volunteers": "coordinatorVolunteers",
+  "gateway_state": "gatewayState",
   "my_assignments": "myAssignments",
+  "my_cases": "myCases",
   "my_membership": "myMembership",
   "my_progress": "myProgress",
   "my_requests": "myRequests",
@@ -490,6 +527,8 @@ function __withTableAccessorAliases<T extends object>(target: T, freeze = false)
 
 type __DbViewBase = __DbConnectionImpl<typeof REMOTE_MODULE>["db"];
 export type DbView = __DbViewBase & {
+  /** @deprecated Use `agentWork` instead. This alias will be removed in the next major version. */
+  readonly "agent_work": __DbViewBase["agentWork"];
   /** @deprecated Use `coordinatorAiEvents` instead. This alias will be removed in the next major version. */
   readonly "coordinator_ai_events": __DbViewBase["coordinatorAiEvents"];
   /** @deprecated Use `coordinatorAiJobs` instead. This alias will be removed in the next major version. */
@@ -520,8 +559,12 @@ export type DbView = __DbViewBase & {
   readonly "coordinator_transfers": __DbViewBase["coordinatorTransfers"];
   /** @deprecated Use `coordinatorVolunteers` instead. This alias will be removed in the next major version. */
   readonly "coordinator_volunteers": __DbViewBase["coordinatorVolunteers"];
+  /** @deprecated Use `gatewayState` instead. This alias will be removed in the next major version. */
+  readonly "gateway_state": __DbViewBase["gatewayState"];
   /** @deprecated Use `myAssignments` instead. This alias will be removed in the next major version. */
   readonly "my_assignments": __DbViewBase["myAssignments"];
+  /** @deprecated Use `myCases` instead. This alias will be removed in the next major version. */
+  readonly "my_cases": __DbViewBase["myCases"];
   /** @deprecated Use `myMembership` instead. This alias will be removed in the next major version. */
   readonly "my_membership": __DbViewBase["myMembership"];
   /** @deprecated Use `myProgress` instead. This alias will be removed in the next major version. */
@@ -548,6 +591,8 @@ export type DbView = __DbViewBase & {
 
 type __TablesBase = __QueryBuilder<typeof tablesSchema.schemaType>;
 export type Tables = __TablesBase & {
+  /** @deprecated Use `agentWork` instead. This alias will be removed in the next major version. */
+  readonly "agent_work": __TablesBase["agentWork"];
   /** @deprecated Use `coordinatorAiEvents` instead. This alias will be removed in the next major version. */
   readonly "coordinator_ai_events": __TablesBase["coordinatorAiEvents"];
   /** @deprecated Use `coordinatorAiJobs` instead. This alias will be removed in the next major version. */
@@ -578,8 +623,12 @@ export type Tables = __TablesBase & {
   readonly "coordinator_transfers": __TablesBase["coordinatorTransfers"];
   /** @deprecated Use `coordinatorVolunteers` instead. This alias will be removed in the next major version. */
   readonly "coordinator_volunteers": __TablesBase["coordinatorVolunteers"];
+  /** @deprecated Use `gatewayState` instead. This alias will be removed in the next major version. */
+  readonly "gateway_state": __TablesBase["gatewayState"];
   /** @deprecated Use `myAssignments` instead. This alias will be removed in the next major version. */
   readonly "my_assignments": __TablesBase["myAssignments"];
+  /** @deprecated Use `myCases` instead. This alias will be removed in the next major version. */
+  readonly "my_cases": __TablesBase["myCases"];
   /** @deprecated Use `myMembership` instead. This alias will be removed in the next major version. */
   readonly "my_membership": __TablesBase["myMembership"];
   /** @deprecated Use `myProgress` instead. This alias will be removed in the next major version. */

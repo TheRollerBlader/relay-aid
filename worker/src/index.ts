@@ -17,7 +17,24 @@ export async function investigate(
   execute: ToolExecutor,
   fetchImpl: typeof fetch = fetch,
   timeBudgetMs = TIME_BUDGET_MS,
+  externalSignal?: AbortSignal,
 ): Promise<{ nemotron: boolean; outcome: string; explanation: string; trace: string[] }> {
+  const controller = new AbortController();
+  const signal = externalSignal ? AbortSignal.any([controller.signal, externalSignal]) : controller.signal;
+  let deadline: ReturnType<typeof setTimeout> | undefined;
+  const trace: string[] = [];
+  try {
+    return await Promise.race([
+      investigateWithinDeadline(env, execute, fetchImpl, signal, trace),
+      new Promise<ReturnType<typeof timeout>>(resolve => {
+        deadline = setTimeout(() => { controller.abort(); resolve(timeout(trace)); }, timeBudgetMs);
+        signal.addEventListener('abort', () => resolve(timeout(trace)), { once: true });
+      }),
+    ]);
+  } finally { if (deadline) clearTimeout(deadline); controller.abort(); }
+}
+
+async function investigateWithinDeadline(env: WorkerEnv, execute: ToolExecutor, fetchImpl: typeof fetch, signal: AbortSignal, trace: string[]): Promise<{ nemotron: boolean; outcome: string; explanation: string; trace: string[] }> {
   const shelterId = env.RELAYAID_SHELTER_ID ?? 'shelter-a';
   if (!modelConfigured(env)) {
     const fallback = fallbackResult(shelterId);
@@ -28,7 +45,6 @@ export async function investigate(
       trace: [],
     };
   }
-  const trace: string[] = [];
   const messages: unknown[] = [
     {
       role: 'system',
@@ -40,12 +56,13 @@ export async function investigate(
         content: `Why are people still waiting at ${shelterId}? Use list_stalled_requests, list_resources, list_volunteer_availability, list_transfer_offers, run_plan, and run_what_if. Submit one proposal that cites result ids. Do not invent stock or medical urgency.`,
     },
   ];
-  const started = Date.now();
-  for (let step = 0; step < STEP_LIMIT; step += 1) {
-    if (Date.now() - started > timeBudgetMs) return timeout(trace);
-    const response = await callModel(env, messages, shelterId, fetchImpl, step < STEP_LIMIT - 1 ? 'required' : 'none');
+  for (let step = 0; step <= STEP_LIMIT; step += 1) {
+    if (signal.aborted) return timeout(trace);
+    const response = await callModel(env, messages, shelterId, fetchImpl, trace.length < STEP_LIMIT ? 'required' : 'none', signal);
     if (!response) return trace.length > 0 ? liveTrace(trace) : timeout(trace);
-    const body = (await response.json()) as { choices?: { message?: ModelMessage }[] };
+    let body: { choices?: { message?: ModelMessage }[] };
+    try { body = await response.json(); } catch { return timeout(trace); }
+    if (signal.aborted) return timeout(trace);
     const message = body.choices?.[0]?.message;
     if (!message) return timeout(trace);
     const calls = message.tool_calls ?? [];
@@ -57,8 +74,10 @@ export async function investigate(
         trace,
       };
     }
+    if (trace.length + calls.length > STEP_LIMIT) return rejected(trace, 'TOOL_BUDGET_EXCEEDED');
     messages.push(message);
     for (const call of calls) {
+      if (signal.aborted) return timeout(trace);
       let args: Record<string, unknown> = {};
       try {
         args = JSON.parse(call.function.arguments) as Record<string, unknown>;
@@ -69,6 +88,7 @@ export async function investigate(
       trace.push(call.function.name);
       if (!decision.ok) return rejected(trace, decision.code);
       const result = await execute(call.function.name, args);
+      if (signal.aborted) return timeout(trace);
       messages.push({
         role: 'tool',
         tool_call_id: call.id,
@@ -112,12 +132,15 @@ async function callModel(
   shelterId: string,
   fetchImpl: typeof fetch,
   toolChoice: 'required' | 'none',
+  signal: AbortSignal,
 ): Promise<Response | null> {
   let last: Response | null = null;
   for (let attempt = 0; attempt < 2; attempt += 1) {
+    if (signal.aborted) return null;
     try {
       last = await fetchImpl(`${env.NEMOTRON_BASE_URL}/chat/completions`, {
         method: 'POST',
+        signal,
         headers: {
           authorization: `Bearer ${env.NEMOTRON_API_KEY}`,
           'content-type': 'application/json',

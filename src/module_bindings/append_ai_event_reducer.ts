@@ -12,6 +12,7 @@ import {
 
 export default {
   jobId: __t.u64(),
+  fence: __t.u64(),
   seq: __t.u32(),
   toolName: __t.string(),
   inputSummary: __t.string(),

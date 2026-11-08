@@ -17,6 +17,9 @@ export const ActionReceipt = __t.object("ActionReceipt", {
 });
 export type ActionReceipt = __Infer<typeof ActionReceipt>;
 
+export const AgentWork = __t.object("AgentWork", {});
+export type AgentWork = __Infer<typeof AgentWork>;
+
 export const AiJob = __t.object("AiJob", {
   jobId: __t.u64(),
   jobClientId: __t.string(),
@@ -47,6 +50,12 @@ export const AiJobEvent = __t.object("AiJobEvent", {
   at: __t.timestamp(),
 });
 export type AiJobEvent = __Infer<typeof AiJobEvent>;
+
+export const AiJobLease = __t.object("AiJobLease", {
+  jobId: __t.u64(),
+  fence: __t.u64(),
+});
+export type AiJobLease = __Infer<typeof AiJobLease>;
 
 export const ApprovalReceipt = __t.object("ApprovalReceipt", {
   approvalId: __t.string(),
@@ -91,6 +100,26 @@ export const AssignmentRow = __t.object("AssignmentRow", {
   dueAt: __t.timestamp(),
 });
 export type AssignmentRow = __Infer<typeof AssignmentRow>;
+
+export const AutonomyConfig = __t.object("AutonomyConfig", {
+  id: __t.string(),
+  gateway: __t.string(),
+  agent: __t.string(),
+  bootstrapAdmin: __t.string(),
+});
+export type AutonomyConfig = __Infer<typeof AutonomyConfig>;
+
+export const AutonomyRow = __t.object("AutonomyRow", {
+  id: __t.string(),
+  json: __t.string(),
+});
+export type AutonomyRow = __Infer<typeof AutonomyRow>;
+
+export const AutonomyState = __t.object("AutonomyState", {
+  id: __t.string(),
+  json: __t.string(),
+});
+export type AutonomyState = __Infer<typeof AutonomyState>;
 
 export const CoordinatorAiEvents = __t.object("CoordinatorAiEvents", {});
 export type CoordinatorAiEvents = __Infer<typeof CoordinatorAiEvents>;
@@ -182,6 +211,9 @@ export const FollowUpRow = __t.object("FollowUpRow", {
   ownerLabel: __t.string(),
 });
 export type FollowUpRow = __Infer<typeof FollowUpRow>;
+
+export const GatewayState = __t.object("GatewayState", {});
+export type GatewayState = __Infer<typeof GatewayState>;
 
 export const HelpRequest = __t.object("HelpRequest", {
   requestPk: __t.u64(),
@@ -278,6 +310,9 @@ export type ModuleConfig = __Infer<typeof ModuleConfig>;
 
 export const MyAssignments = __t.object("MyAssignments", {});
 export type MyAssignments = __Infer<typeof MyAssignments>;
+
+export const MyCases = __t.object("MyCases", {});
+export type MyCases = __Infer<typeof MyCases>;
 
 export const MyMembership = __t.object("MyMembership", {});
 export type MyMembership = __Infer<typeof MyMembership>;
@@ -554,6 +589,7 @@ export const WorkerJobRow = __t.object("WorkerJobRow", {
   snapshotVersion: __t.u64(),
   leaseExpiresAt: __t.timestamp(),
   leaseOwner: __t.identity(),
+  fence: __t.u64(),
 });
 export type WorkerJobRow = __Infer<typeof WorkerJobRow>;
 
